@@ -10,6 +10,9 @@ service Fhirbuffer {
  // Obtains the healthcare resource that matches the search criteria.
  rpc Read(Search) returns (Record) {}
 
+ // Modifies the healthcare resource 
+ rpc Update(Change) returns (Record) {}
+
 }
 
 // A search criteria to request the healthcare resource.
@@ -21,11 +24,12 @@ message Search {
  string type = 2;
 }
 
+// A modification to change the healthcare resource.
+message Change {
+ bytes resource = 1;
+}
+
 // A healthcare resource returned from the data store.
 message Record {
-//// string id = 1;
-//// string resource_type = 2;
-//// string status = 3;
-
  bytes resource = 1;
 }

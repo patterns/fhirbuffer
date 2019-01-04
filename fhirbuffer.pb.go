@@ -3,13 +3,12 @@
 
 package fhirbuffer
 
-import proto "github.com/golang/protobuf/proto"
-import fmt "fmt"
-import math "math"
-
 import (
-	context "golang.org/x/net/context"
+	context "context"
+	fmt "fmt"
+	proto "github.com/golang/protobuf/proto"
 	grpc "google.golang.org/grpc"
+	math "math"
 )
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -21,7 +20,7 @@ var _ = math.Inf
 // is compatible with the proto package it is being compiled against.
 // A compilation error at this line likely means your copy of the
 // proto package needs to be updated.
-const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
+const _ = proto.ProtoPackageIsVersion3 // please upgrade the proto package
 
 // A search criteria to request the healthcare resource.
 type Search struct {
@@ -38,16 +37,17 @@ func (m *Search) Reset()         { *m = Search{} }
 func (m *Search) String() string { return proto.CompactTextString(m) }
 func (*Search) ProtoMessage()    {}
 func (*Search) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fhirbuffer_16df662dcb5957b7, []int{0}
+	return fileDescriptor_ffd338a9c98fa409, []int{0}
 }
+
 func (m *Search) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Search.Unmarshal(m, b)
 }
 func (m *Search) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Search.Marshal(b, m, deterministic)
 }
-func (dst *Search) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Search.Merge(dst, src)
+func (m *Search) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Search.Merge(m, src)
 }
 func (m *Search) XXX_Size() int {
 	return xxx_messageInfo_Search.Size(m)
@@ -72,6 +72,46 @@ func (m *Search) GetType() string {
 	return ""
 }
 
+// A modification to change the healthcare resource.
+type Change struct {
+	Resource             []byte   `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
+	XXX_NoUnkeyedLiteral struct{} `json:"-"`
+	XXX_unrecognized     []byte   `json:"-"`
+	XXX_sizecache        int32    `json:"-"`
+}
+
+func (m *Change) Reset()         { *m = Change{} }
+func (m *Change) String() string { return proto.CompactTextString(m) }
+func (*Change) ProtoMessage()    {}
+func (*Change) Descriptor() ([]byte, []int) {
+	return fileDescriptor_ffd338a9c98fa409, []int{1}
+}
+
+func (m *Change) XXX_Unmarshal(b []byte) error {
+	return xxx_messageInfo_Change.Unmarshal(m, b)
+}
+func (m *Change) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
+	return xxx_messageInfo_Change.Marshal(b, m, deterministic)
+}
+func (m *Change) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Change.Merge(m, src)
+}
+func (m *Change) XXX_Size() int {
+	return xxx_messageInfo_Change.Size(m)
+}
+func (m *Change) XXX_DiscardUnknown() {
+	xxx_messageInfo_Change.DiscardUnknown(m)
+}
+
+var xxx_messageInfo_Change proto.InternalMessageInfo
+
+func (m *Change) GetResource() []byte {
+	if m != nil {
+		return m.Resource
+	}
+	return nil
+}
+
 // A healthcare resource returned from the data store.
 type Record struct {
 	Resource             []byte   `protobuf:"bytes,1,opt,name=resource,proto3" json:"resource,omitempty"`
@@ -84,16 +124,17 @@ func (m *Record) Reset()         { *m = Record{} }
 func (m *Record) String() string { return proto.CompactTextString(m) }
 func (*Record) ProtoMessage()    {}
 func (*Record) Descriptor() ([]byte, []int) {
-	return fileDescriptor_fhirbuffer_16df662dcb5957b7, []int{1}
+	return fileDescriptor_ffd338a9c98fa409, []int{2}
 }
+
 func (m *Record) XXX_Unmarshal(b []byte) error {
 	return xxx_messageInfo_Record.Unmarshal(m, b)
 }
 func (m *Record) XXX_Marshal(b []byte, deterministic bool) ([]byte, error) {
 	return xxx_messageInfo_Record.Marshal(b, m, deterministic)
 }
-func (dst *Record) XXX_Merge(src proto.Message) {
-	xxx_messageInfo_Record.Merge(dst, src)
+func (m *Record) XXX_Merge(src proto.Message) {
+	xxx_messageInfo_Record.Merge(m, src)
 }
 func (m *Record) XXX_Size() int {
 	return xxx_messageInfo_Record.Size(m)
@@ -113,7 +154,25 @@ func (m *Record) GetResource() []byte {
 
 func init() {
 	proto.RegisterType((*Search)(nil), "fhirbuffer.Search")
+	proto.RegisterType((*Change)(nil), "fhirbuffer.Change")
 	proto.RegisterType((*Record)(nil), "fhirbuffer.Record")
+}
+
+func init() { proto.RegisterFile("fhirbuffer.proto", fileDescriptor_ffd338a9c98fa409) }
+
+var fileDescriptor_ffd338a9c98fa409 = []byte{
+	// 176 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x48, 0xcb, 0xc8, 0x2c,
+	0x4a, 0x2a, 0x4d, 0x4b, 0x4b, 0x2d, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x42, 0x88,
+	0x28, 0xe9, 0x70, 0xb1, 0x05, 0xa7, 0x26, 0x16, 0x25, 0x67, 0x08, 0xf1, 0x71, 0x31, 0x65, 0xa6,
+	0x48, 0x30, 0x2a, 0x30, 0x6a, 0x70, 0x06, 0x31, 0x65, 0xa6, 0x08, 0x09, 0x71, 0xb1, 0x94, 0x54,
+	0x16, 0xa4, 0x4a, 0x30, 0x81, 0x45, 0xc0, 0x6c, 0x25, 0x15, 0x2e, 0x36, 0xe7, 0x8c, 0xc4, 0xbc,
+	0xf4, 0x54, 0x21, 0x29, 0x2e, 0x8e, 0xa2, 0xd4, 0xe2, 0xfc, 0xd2, 0xa2, 0xe4, 0x54, 0xb0, 0x1e,
+	0x9e, 0x20, 0x38, 0x1f, 0xa4, 0x2a, 0x28, 0x35, 0x39, 0xbf, 0x28, 0x05, 0x9f, 0x2a, 0xa3, 0x22,
+	0x2e, 0x2e, 0x37, 0xb8, 0x3b, 0x84, 0x0c, 0xb8, 0x58, 0x82, 0x52, 0x13, 0x53, 0x84, 0x84, 0xf4,
+	0x90, 0x9c, 0x0b, 0x71, 0x99, 0x14, 0x8a, 0x18, 0xc4, 0x64, 0x25, 0x06, 0x21, 0x23, 0x2e, 0xb6,
+	0xd0, 0x82, 0x94, 0xc4, 0x92, 0x54, 0x54, 0x3d, 0x10, 0xf7, 0x61, 0xd7, 0x93, 0xc4, 0x06, 0x0e,
+	0x00, 0x63, 0x40, 0x00, 0x00, 0x00, 0xff, 0xff, 0x4b, 0xaa, 0x3c, 0x01, 0x14, 0x01, 0x00, 0x00,
 }
 
 // Reference imports to suppress errors if they are not otherwise used.
@@ -130,6 +189,8 @@ const _ = grpc.SupportPackageIsVersion4
 type FhirbufferClient interface {
 	// Obtains the healthcare resource that matches the search criteria.
 	Read(ctx context.Context, in *Search, opts ...grpc.CallOption) (*Record, error)
+	// Modifies the healthcare resource
+	Update(ctx context.Context, in *Change, opts ...grpc.CallOption) (*Record, error)
 }
 
 type fhirbufferClient struct {
@@ -149,10 +210,21 @@ func (c *fhirbufferClient) Read(ctx context.Context, in *Search, opts ...grpc.Ca
 	return out, nil
 }
 
+func (c *fhirbufferClient) Update(ctx context.Context, in *Change, opts ...grpc.CallOption) (*Record, error) {
+	out := new(Record)
+	err := c.cc.Invoke(ctx, "/fhirbuffer.Fhirbuffer/Update", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FhirbufferServer is the server API for Fhirbuffer service.
 type FhirbufferServer interface {
 	// Obtains the healthcare resource that matches the search criteria.
 	Read(context.Context, *Search) (*Record, error)
+	// Modifies the healthcare resource
+	Update(context.Context, *Change) (*Record, error)
 }
 
 func RegisterFhirbufferServer(s *grpc.Server, srv FhirbufferServer) {
@@ -177,6 +249,24 @@ func _Fhirbuffer_Read_Handler(srv interface{}, ctx context.Context, dec func(int
 	return interceptor(ctx, in, info, handler)
 }
 
+func _Fhirbuffer_Update_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(Change)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FhirbufferServer).Update(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/fhirbuffer.Fhirbuffer/Update",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FhirbufferServer).Update(ctx, req.(*Change))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Fhirbuffer_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "fhirbuffer.Fhirbuffer",
 	HandlerType: (*FhirbufferServer)(nil),
@@ -185,23 +275,11 @@ var _Fhirbuffer_serviceDesc = grpc.ServiceDesc{
 			MethodName: "Read",
 			Handler:    _Fhirbuffer_Read_Handler,
 		},
+		{
+			MethodName: "Update",
+			Handler:    _Fhirbuffer_Update_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "fhirbuffer.proto",
-}
-
-func init() { proto.RegisterFile("fhirbuffer.proto", fileDescriptor_fhirbuffer_16df662dcb5957b7) }
-
-var fileDescriptor_fhirbuffer_16df662dcb5957b7 = []byte{
-	// 148 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x12, 0x48, 0xcb, 0xc8, 0x2c,
-	0x4a, 0x2a, 0x4d, 0x4b, 0x4b, 0x2d, 0xd2, 0x2b, 0x28, 0xca, 0x2f, 0xc9, 0x17, 0xe2, 0x42, 0x88,
-	0x28, 0xe9, 0x70, 0xb1, 0x05, 0xa7, 0x26, 0x16, 0x25, 0x67, 0x08, 0xf1, 0x71, 0x31, 0x65, 0xa6,
-	0x48, 0x30, 0x2a, 0x30, 0x6a, 0x70, 0x06, 0x31, 0x65, 0xa6, 0x08, 0x09, 0x71, 0xb1, 0x94, 0x54,
-	0x16, 0xa4, 0x4a, 0x30, 0x81, 0x45, 0xc0, 0x6c, 0x25, 0x15, 0x2e, 0xb6, 0xa0, 0xd4, 0xe4, 0xfc,
-	0xa2, 0x14, 0x21, 0x29, 0x2e, 0x8e, 0xa2, 0xd4, 0xe2, 0xfc, 0xd2, 0xa2, 0xe4, 0x54, 0xb0, 0x1e,
-	0x9e, 0x20, 0x38, 0xdf, 0xc8, 0x8e, 0x8b, 0xcb, 0x0d, 0x6e, 0x83, 0x90, 0x01, 0x17, 0x4b, 0x50,
-	0x6a, 0x62, 0x8a, 0x90, 0x90, 0x1e, 0x92, 0x43, 0x20, 0x76, 0x4a, 0xa1, 0x88, 0x41, 0x4c, 0x56,
-	0x62, 0x48, 0x62, 0x03, 0x3b, 0xd3, 0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0x38, 0x37, 0xfc, 0xab,
-	0xba, 0x00, 0x00, 0x00,
 }
