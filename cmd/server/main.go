@@ -4,7 +4,6 @@
 package main
 
 import (
-	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -12,48 +11,17 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/jackc/pgx"
 	pb "github.com/patterns/fhirbuffer"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials"
 )
 
 var (
-	tls = flag.Bool("tls", false, "Connection uses TLS if true, else vanilla TCP")
+	tls      = flag.Bool("tls", false, "Connection uses TLS if true, else vanilla TCP")
 	certFile = flag.String("cert_file", "", "The TLS cert file")
-	keyFile = flag.String("key_file", "", "The TLS key file")
-	port = flag.Int("port", 10000, "The server port")
-
-	databaseConfig *pgx.ConnConfig = &pgx.ConnConfig{Host: "127.0.0.1", User: "postgres", Password: "postgres", Database: "fhirbase"}
+	keyFile  = flag.String("key_file", "", "The TLS key file")
+	port     = flag.Int("port", 10000, "The server port")
 )
-
-type fhirbuffer struct{}
-
-func (s *fhirbuffer) Read(ctx context.Context, req *pb.Search) (*pb.Record, error) {
-	var resource string
-
-	conn, err := pgx.Connect(*databaseConfig)
-	if err != nil {
-		log.Printf("Database connection, %v", err)
-		return &pb.Record{}, err
-	}
-
-	qerr := conn.QueryRow("select public.fhirbase_read( $1 , $2 )", req.Type, req.Id).Scan(&resource)
-	if qerr != nil {
-		log.Printf("Database read, %v", err)
-		return &pb.Record{}, err
-	}
-
-	resultset := &pb.Record{
-		Resource: []byte(resource),
-	}
-	return resultset, nil
-}
-
-func newServer() *fhirbuffer {
-	s := &fhirbuffer{}
-	return s
-}
 
 func main() {
 	flag.Parse()
