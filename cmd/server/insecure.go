@@ -1,0 +1,120 @@
+// See https://github.com/johanbrandhorst/grpc-auth-example
+
+package main
+
+import (
+	"crypto"
+	"crypto/tls"
+	"crypto/x509"
+	"log"
+)
+
+const certPEM = `-----BEGIN CERTIFICATE-----
+MIIE8jCCAtqgAwIBAgIBATANBgkqhkiG9w0BAQsFADAZMRcwFQYDVQQDEw5UZXN0
+IENlcnQgQXV0aDAeFw0xODEyMjEwOTQ5NDlaFw0yMDA2MjEwOTQ5NDlaMBkxFzAV
+BgNVBAMTDlRlc3QgQ2VydCBBdXRoMIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIIC
+CgKCAgEAouhna0szi1l3sxTCBjHbKaK1s/RqyXmKKD0OTFuHdNuZGvYI/YcgvoXh
+ERvRS+AvJP4kMvAvWximoRedDzYeB36+kp26bm1Ixng14dXvibb+PJ58K+z+5r4g
+M6RlAzrRoNLgmMLOMIj4OYjtuRu6uFFpxkNzV+Td0ihpxu7wWs6ajIZhq82scix9
+n4L3pVCV9oPNBEgAX/FNuECfgqXGYJ0u5GdLVGG1tciFLVFf5uYHyPYlUPRAbIaL
+NoUuk4QeFl4YeWmDsaBXO/dAT3EIBw4JwED6eOkYzg0VaKJH9ChFr+vVTyT7cbVq
+DEZCnmoBRlpKc9/tviS4tf+GLDtArqhPSoDRfghhEzdFlCv1VYir4ZmfBbGasePP
+7E8h23o+Si0LKroyaW28n0bQKOi9XU+2LYm9zBcFs05gMysNpT/ayC3wNbeStM/T
+pNquIpmLcsbflcpBH2F4gsoUiZ5zHhu0VhB/gZYylqrLR1/xu8rkcmGLb/EQGkg2
+iz4ihhmRoLvO22YzrJI7qkRV24R3t0uavO0gqJpCC+OVyOsWTQHucNw8QlQMmOBZ
+1J19/HvJfMl+QjTgap53gYmnW4ckgZ0gt1PwDHg/GkMqnPFCLyX6yL6AwHQYMC8/
+Di9pCt6Rh0nwHLC0BFqqZ/tDo+SJGgACaDt6oTuYDyI8owe261kCAwEAAaNFMEMw
+DgYDVR0PAQH/BAQDAgEGMBIGA1UdEwEB/wQIMAYBAf8CAQAwHQYDVR0OBBYEFAHG
+Z/j8JIrKGysRIG8zf7AMhq/4MA0GCSqGSIb3DQEBCwUAA4ICAQA3xYPPJPY/cmyX
+RwGYwvDDN07h6CtmpxnmE+H0B80fcMTOWDpTUhhhus+RAv6FEJYiIqbbmzXHgwyn
+8iByd8bqBZcjuT8r+Wh4IsvAd5uBsUEmYI147eNueJCWnosfd5VKSEvrcscVBuy5
++b7jR8JD92LnAubTrf48lwL1sZcny2EDoUig2bnmFwSaLDqhldwTtkQRmGhdHPlG
+0DLwwNfFdshgW7aZEOdIpwVY21SkFolAijwGUwz+YDHiAgaueH1xQDJPqPRaz6b8
+if84xP3d1fQdoy5bVWzkRAA/IqSm58SKye9fV/IoJHbGmn5xC+oJ8FDp+nu0j6F+
+Gb95DqIXosbkbXtrpugRlu+lLrWehh73CarmZ65J+qNBwHqteVY93fe988moyFYf
++l5LqfNu65RjGmC5dtopfK1EYwdjWkSygGTFJU3vRsNw/gkJlqdJNKmXhLmxPa0A
+6Il8fuFWiIUXKNaz8fBkKZtOd5mdguEhj8QVGFSLe43s+pqJc5835IeQFZLFplOy
+rSibBPtB1jcf3sqE3Tlwsv1x7XjjQnRN7BzZebtG1kRW3qhWddklkFXUK+O1KhxZ
+lrHoU3/Nn6HiNMSvoheYXVwFDCjlKKikpvt7P7YeQyy+TGlr6woi/s46SBmXFOMc
+uQB0Zi4VAemMc1hzfRJZL49iFaJG2g==
+-----END CERTIFICATE-----
+`
+
+const keyPEM = `-----BEGIN RSA PRIVATE KEY-----
+MIIJJwIBAAKCAgEAouhna0szi1l3sxTCBjHbKaK1s/RqyXmKKD0OTFuHdNuZGvYI
+/YcgvoXhERvRS+AvJP4kMvAvWximoRedDzYeB36+kp26bm1Ixng14dXvibb+PJ58
+K+z+5r4gM6RlAzrRoNLgmMLOMIj4OYjtuRu6uFFpxkNzV+Td0ihpxu7wWs6ajIZh
+q82scix9n4L3pVCV9oPNBEgAX/FNuECfgqXGYJ0u5GdLVGG1tciFLVFf5uYHyPYl
+UPRAbIaLNoUuk4QeFl4YeWmDsaBXO/dAT3EIBw4JwED6eOkYzg0VaKJH9ChFr+vV
+TyT7cbVqDEZCnmoBRlpKc9/tviS4tf+GLDtArqhPSoDRfghhEzdFlCv1VYir4Zmf
+BbGasePP7E8h23o+Si0LKroyaW28n0bQKOi9XU+2LYm9zBcFs05gMysNpT/ayC3w
+NbeStM/TpNquIpmLcsbflcpBH2F4gsoUiZ5zHhu0VhB/gZYylqrLR1/xu8rkcmGL
+b/EQGkg2iz4ihhmRoLvO22YzrJI7qkRV24R3t0uavO0gqJpCC+OVyOsWTQHucNw8
+QlQMmOBZ1J19/HvJfMl+QjTgap53gYmnW4ckgZ0gt1PwDHg/GkMqnPFCLyX6yL6A
+wHQYMC8/Di9pCt6Rh0nwHLC0BFqqZ/tDo+SJGgACaDt6oTuYDyI8owe261kCAwEA
+AQKCAgACGvzTLyqgX2yjnN4RFG3fsOGmTL9gkTiO4pMfu4MZqIjnB00AcdGjhLlu
+7iwbTe9uC/bNzbre84ebx2FZQ/rJYAL4hB9XtAPfxMf1fj1VS08n22iBbNOyibyC
+zlob25O//1m1v7bIe8yxeaqQ3OHh5fN3A4InHaccQzdywb3LfqYSsN3sSYE0DI0n
+FZs7wLnfcL6ikoemtciqW/Nzzc6tivqDKy6XDZg6nDfUaRvTMR/iogPDcxSuEmMU
+Nk5uy6NT6K1qTEnObuMRvFVRcYWICc9oc66JB4Ixj4u6SXaimi6kYmjkV/cD9jND
+q1jLEVWo4hvaOYeqEHFusLm8MpvYYL8OPXNrIIMAZp3mXYjBXxpGgYF47mmYL6aA
+Aiz5X2+nqItj1v+Z4tDHZwkw872KNf1YPCm7fjb2B7Hk41V1Qe2V4le2s4LS5c4Z
+eNdn78xq56BDpS0IXoIRIqCuNWn8wukqSxFVRzNtHroqZh60TDtYghToa+KkjF0j
+iEEDY0aCivOWUQoM7fNHypU2NcpxZKm7K4me3tsTO3sXy0y6nOfBIsxkQWbO6xxI
+kTvfl8mWI2WyX315FdAuzILZQMVfsFTC8rJ1vyuoE08I18tVpWwvZ7sob1lDd5c4
+cUxpjJsBtftW2mEvq4tJFrlbfM/P38NoCEJ84bl+gRsbIC7InQKCAQEAzqlaQSyv
+zSKMbZWMwRipcX+hhSOdGbCDQLJRwWtGOADCug6Pv3Lkwb4VYR1bPgj693mjkwvJ
+zXQY7U38hugNnGXk8M+xZGyxe1lhJjldomEm9SLYsDUdnmDQkfQmhdJAziukcdI2
+7SA1fM6egcUO1AUiklDOjZw8CSulO2j+OYyQFsnoeuNr4w9TY5+bdO7MrV2IpwxI
+5+ZHF02Ln5VXihl0SSe4uV7+5g6j3b3IFZrSJzOShHlmTex0jS4gC3c2/aAglwsc
+atW/GRZ2AgMwwR3Vj87DZ08C55TAbSkrwunsCcSYwj6JjWNMQJ1Xn9MSz7AjHeP5
+Y+ZDRECXwo76ywKCAQEAyczulZWEzrM4BIi+JLSAnEQ+7+rN4TNyRAD+ZE+nklOQ
+dMkbniDgICgurP/hB/L2lgdGtlPQIYkQ9mb3tKpmjvOVlYDrUmKj7uy7G9w0IRHn
+dhtCQgpUtyxbQ/g8/CiExsF0Ma4YBkCGnIWJpofTq7i0BmnuOIPBh/pOd9SJ5031
+6GFas5b8reaZaaCNIcY3Wxp/JhrmWmwQMNSzDRVi/Z1chVHgaRdKNcZNAObxtLYY
+DQiQgGRszeShyErCGKdo78NM2hasdisFCRnZT05GZro+d12cyJHsChofqTUJaqym
+Ioj1W46NBJoIr1TuODqBbGIMZRAdWdkEz0rcCG656wKCAQAemaTrkZpWXY89iq9U
+yDoOvD9GX4ebji9hHQZOBXxYPoSW2CEgz/pfVa4EuzwPa3T9v90goNY4vcATI0EJ
+GMMrLUtA/P/fRtjg0tM3vbbHnGsQUSCUtsiz8tHvSp+JoSBHZt7qm53WbrZ8zHtb
+67nOWxRLZfuvrDqXgQbuTRWXn+CV/z+VMqd+734Beliib9mOshLR6VfCPq64HJtX
+/d0AbdRyIJeRmydTGUfaRYei61HCzDgdtXwYfbKkVPgZuoVB+LvaoaKLjyrEpDbF
+BYPqlGhS6uK0IVbkw3nasAXyzoBM0fdsi6YCcXmQ97tJxw86AXKxslfzGt1K9eWC
+wXkRAoIBAFtQLvli0diSQhvTIG8NelC7lNsNHaH0nJTm+jW70XCl/WzK/4M7Dw+d
+/xjrJBFrwGa83iNso3Y5RoKorxeCL6wpzpr63gDGf7WCS1xc9P2t01WfGgk2EYVd
+PeLwte/ICeTB7uj4BQj3M7IpvtKrDX3bsyJf1pqeC/mSquUQOGKA5XAEdX1kKewq
+t2qTaqlIvw2rXLOKYoex9FWUOX0HG2b1SMNO/EOxdTQGChwJZH/IEfP71x8x0gYM
+maQ/J7ruLc6oSeM5dUp3Ru0KVEnNeo/LYK60nlgnp24eygrP4/XwL7Da1mNairb1
+WE62GKE64AuCBmfIte9NAx8lmZD7QYcCggEADqclj/H4LBuobANf9cTDEGLzzbrl
+Anganq9gwJaOkG+u2YFyWt+wV49S5LzpZfVSNdZT78VUUqo4BqlqjPAwuspdBjKn
+ohGY5WyssMKWCcQGpTiSWqH07Ed5f21in/NvCRMZU5eFbon8G+90oPgAXRXw3All
+jE4xY1OYBFDw9TP3TNcbvSHXl9n3B0mqGtnnaZVTpZCj5G1+uywA1QD6f4T/g64h
+g5d1WFs9MjDL6nIBAvTE1cAr5p47Q13q9GKbxgPVvDOCjNG4qwVNjQfrnpLJch0z
+efMHwamTU+vmXJiGMqDVTj07RFIJB9ITw6r35iq+dEXbxteSMLUwmJL37A==
+-----END RSA PRIVATE KEY-----
+`
+
+var (
+	// Key is the private key
+	Key crypto.PrivateKey
+	// Cert is a self signed certificate
+	Cert tls.Certificate
+	// CertPool contains the self signed certificate
+	CertPool *x509.CertPool
+)
+
+func init() {
+	var err error
+	Cert, err = tls.X509KeyPair([]byte(certPEM), []byte(keyPEM))
+	if err != nil {
+		log.Fatalln("Failed to parse key pair:", err)
+	}
+	Cert.Leaf, err = x509.ParseCertificate(Cert.Certificate[0])
+	if err != nil {
+		log.Fatalln("Failed to parse certificate:", err)
+	}
+
+	CertPool = x509.NewCertPool()
+	CertPool.AddCert(Cert.Leaf)
+
+	Key = Cert.PrivateKey
+}
