@@ -16,7 +16,6 @@ var (
 type fhirbuffer struct{}
 
 func (s *fhirbuffer) Read(ctx context.Context, req *pb.Search) (*pb.Record, error) {
-
 	conn, err := pgx.Connect(*databaseConfig)
 	if err != nil {
 		log.Printf("Database connection, %v", err)
@@ -29,7 +28,6 @@ func (s *fhirbuffer) Read(ctx context.Context, req *pb.Search) (*pb.Record, erro
 }
 
 func (s *fhirbuffer) Update(ctx context.Context, req *pb.Change) (*pb.Record, error) {
-
 	conn, err := pgx.Connect(*databaseConfig)
 	if err != nil {
 		log.Printf("Database connection, %v", err)
@@ -38,6 +36,30 @@ func (s *fhirbuffer) Update(ctx context.Context, req *pb.Change) (*pb.Record, er
 	defer conn.Close()
 
 	qr := conn.QueryRow("SELECT PUBLIC.fhirbase_update( $1 )", req.Resource)
+	return s.runStmt(ctx, qr)
+}
+
+func (s *fhirbuffer) Create(ctx context.Context, req *pb.Change) (*pb.Record, error) {
+	conn, err := pgx.Connect(*databaseConfig)
+	if err != nil {
+		log.Printf("Database connection, %v", err)
+		return &pb.Record{}, err
+	}
+	defer conn.Close()
+
+	qr := conn.QueryRow("SELECT PUBLIC.fhirbase_create( $1 )", req.Resource)
+	return s.runStmt(ctx, qr)
+}
+
+func (s *fhirbuffer) Delete(ctx context.Context, req *pb.Search) (*pb.Record, error) {
+	conn, err := pgx.Connect(*databaseConfig)
+	if err != nil {
+		log.Printf("Database connection, %v", err)
+		return &pb.Record{}, err
+	}
+	defer conn.Close()
+
+	qr := conn.QueryRow("SELECT PUBLIC.fhirbase_delete( $1 , $2 )", req.Type, req.Id)
 	return s.runStmt(ctx, qr)
 }
 
@@ -65,7 +87,7 @@ func newServer() *fhirbuffer {
 func readDatabaseConf() {
 	url := os.Getenv("DATABASE_URL")
 	host := os.Getenv("DB_HOST")
-	if (len(host) == 0 && len(url) == 0) {
+	if len(host) == 0 && len(url) == 0 {
 		// Hardcoded default conf fields for local development environment
 		databaseConfig = &pgx.ConnConfig{Host: "127.0.0.1", User: "postgres", Password: "postgres", Database: "fhirbase"}
 	} else if len(url) == 0 {

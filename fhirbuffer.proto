@@ -13,6 +13,12 @@ service Fhirbuffer {
  // Modifies the healthcare resource 
  rpc Update(Change) returns (Record) {}
 
+ // Recreates the healthcare resource 
+ rpc Create(Change) returns (Record) {}
+
+ // Removes the healthcare resource that matches the search criteria.
+ rpc Delete(Search) returns (Record) {}
+
 }
 
 // A search criteria to request the healthcare resource.

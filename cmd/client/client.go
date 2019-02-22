@@ -5,7 +5,9 @@ import (
 	"flag"
 	"io/ioutil"
 	"log"
+	"os"
 	"path/filepath"
+	"strings"
 
 	pb "github.com/patterns/fhirbuffer"
 	"google.golang.org/grpc"
@@ -23,6 +25,7 @@ var (
 
 func main() {
 	flag.Parse()
+	climode := enableCreateDelete()
 	opts := enableTLSConfig()
 	conn, err := grpc.Dial(*serverAddr, opts...)
 	if err != nil {
@@ -32,21 +35,27 @@ func main() {
 
 	client := pb.NewFhirbufferClient(conn)
 
-	updatePatient(client)
+	updatePatient(client, climode)
 
-	printPatient(client)
+	printPatient(client, climode)
 }
 
-func printPatient(client pb.FhirbufferClient) {
+func printPatient(client pb.FhirbufferClient, mode string) {
 	req := &pb.Search{Id: *pid, Type: "Patient"}
-	resultset, err := client.Read(context.Background(), req)
+	var err error
+	var resultset *pb.Record
+	if mode == "delete" {
+		resultset, err = client.Delete(context.Background(), req)
+	} else {
+		resultset, err = client.Read(context.Background(), req)
+	}
 	if err != nil {
 		log.Fatalf("Read, %v", err)
 	}
 	log.Println(resultset)
 }
 
-func updatePatient(client pb.FhirbufferClient) {
+func updatePatient(client pb.FhirbufferClient, mode string) {
 	if len(*changeFile) == 0 {
 		return
 	}
@@ -62,9 +71,28 @@ func updatePatient(client pb.FhirbufferClient) {
 	}
 
 	req := &pb.Change{Resource: json}
-	resultset, err := client.Update(context.Background(), req)
-	if err != nil {
-		log.Fatalf("Update, %v", err)
+	var apierr error
+	var resultset *pb.Record
+	if mode == "create" {
+		resultset, apierr = client.Create(context.Background(), req)
+	} else {
+		resultset, apierr = client.Update(context.Background(), req)
+	}
+	if apierr != nil {
+		log.Fatalf("Update, %v", apierr)
 	}
 	log.Println(resultset)
+}
+
+func enableCreateDelete() string {
+	switch strings.ToLower(filepath.Base(os.Args[0])) {
+	case "fhirrm":
+		// Naming the binary executable "fhirrm" enables delete mode.
+		return "delete"
+	case "fhirmk":
+		// Naming the binary executable "fhirmk" enables create mode.
+		return "create"
+	default:
+		return "default"
+	}
 }

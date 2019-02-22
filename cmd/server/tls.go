@@ -11,8 +11,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/base64"
 	"log"
-	"os"
 	"math/big"
+	"os"
 	"time"
 
 	////"github.com/patterns/fhirbuffer/insecure"
@@ -20,14 +20,13 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-
 func enableTLSConfig() []grpc.ServerOption {
 	if !*tlsflag {
 		// Vanilla TCP
 		return []grpc.ServerOption{}
 	}
 	if *certFile != "" {
-		// Using development env CRT, KEY files 
+		// Using development env CRT, KEY files
 		creds, err := credentials.NewServerTLSFromFile(*certFile, *keyFile)
 		if err != nil {
 			log.Fatalf("Failed to generate credentials %v", err)
@@ -36,7 +35,7 @@ func enableTLSConfig() []grpc.ServerOption {
 	}
 
 	// Heroku hosting
-	return test1();
+	return test1()
 }
 
 func test1() []grpc.ServerOption {
@@ -50,8 +49,8 @@ func test1() []grpc.ServerOption {
 
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{*tlsCert},
-		ClientAuth: tls.RequireAndVerifyClientCert,
-		ClientCAs: CertPool,
+		ClientAuth:   tls.RequireAndVerifyClientCert,
+		ClientCAs:    CertPool,
 	}
 
 	creds := credentials.NewTLS(tlsConfig)
@@ -65,7 +64,7 @@ func genNewCert(username string) (*tls.Certificate, error) {
 		return nil, err
 	}
 
-	svctemplate, err := certTemplate(username, time.Hour *12)
+	svctemplate, err := certTemplate(username, time.Hour*12)
 	if err != nil {
 		return nil, err
 	}

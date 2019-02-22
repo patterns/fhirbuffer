@@ -1,5 +1,5 @@
 // See https://jbrandhorst.com/post/grpc-auth/
-// 
+//
 //
 package main
 
@@ -11,8 +11,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/base64"
 	"log"
-	"os"
 	"math/big"
+	"os"
 	"time"
 
 	////"github.com/patterns/fhirbuffer/insecure"
@@ -23,21 +23,20 @@ import (
 func enableTLSConfig() []grpc.DialOption {
 	if !*tlsflag {
 		// Vanilla TCP
-		return []grpc.DialOption {grpc.WithInsecure()}
+		return []grpc.DialOption{grpc.WithInsecure()}
 	}
-        if *caFile != "" {
-		// Using development env CRT, KEY files 
+	if *caFile != "" {
+		// Using development env CRT, KEY files
 
-                creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
-                if err != nil {
-                        log.Fatalf("Failed to create TLS credentials %v", err)
-                }
-                return []grpc.DialOption {grpc.WithTransportCredentials(creds)}
+		creds, err := credentials.NewClientTLSFromFile(*caFile, *serverHostOverride)
+		if err != nil {
+			log.Fatalf("Failed to create TLS credentials %v", err)
+		}
+		return []grpc.DialOption{grpc.WithTransportCredentials(creds)}
 	}
-
 
 	// Heroku hosting
-	return test1();
+	return test1()
 }
 
 func test1() []grpc.DialOption {
@@ -51,13 +50,13 @@ func test1() []grpc.DialOption {
 
 	tlsConfig := &tls.Config{
 		Certificates: []tls.Certificate{*tlsCert},
-		RootCAs: CertPool,
-		ServerName: *serverHostOverride,
+		RootCAs:      CertPool,
+		ServerName:   *serverHostOverride,
 	}
 
 	creds := credentials.NewTLS(tlsConfig)
 
-	return []grpc.DialOption { grpc.WithTransportCredentials(creds) }
+	return []grpc.DialOption{grpc.WithTransportCredentials(creds)}
 }
 
 func genNewCert(username string) (*tls.Certificate, error) {
@@ -66,7 +65,7 @@ func genNewCert(username string) (*tls.Certificate, error) {
 		return nil, err
 	}
 
-	template, err := certTemplate(username, time.Hour *2)
+	template, err := certTemplate(username, time.Hour*2)
 	if err != nil {
 		return nil, err
 	}

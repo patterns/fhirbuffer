@@ -33,4 +33,3 @@ func main() {
 	pb.RegisterFhirbufferServer(grpcServer, newServer())
 	grpcServer.Serve(lis)
 }
-
