@@ -19,7 +19,8 @@ var (
 	serverAddr         = flag.String("server_addr", "127.0.0.1:10000", "The GRPC server address in the format of host:port")
 	serverHostOverride = flag.String("server_host_override", "fhirbuffer", "The server name to verify against the value returned by TLS handshake")
 
-	pid        = flag.String("patient_id", "d3af67c9-0c02-45f2-bc91-fea45af3ee83", "The patient key as UUID string")
+	rid        = flag.String("resource_id", "d3af67c9-0c02-45f2-bc91-fea45af3ee83", "The resource key as UUID string")
+	rtype      = flag.String("resource_type", "Patient", "The resource type (default: \"Patient\")")
 	changeFile = flag.String("change_file", "", "The JSON data for update")
 )
 
@@ -35,13 +36,13 @@ func main() {
 
 	client := pb.NewFhirbufferClient(conn)
 
-	updatePatient(client, climode)
+	updateResource(client, climode)
 
-	printPatient(client, climode)
+	printResource(client, climode)
 }
 
-func printPatient(client pb.FhirbufferClient, mode string) {
-	req := &pb.Search{Id: *pid, Type: "Patient"}
+func printResource(client pb.FhirbufferClient, mode string) {
+	req := &pb.Search{Id: *rid, Type: *rtype}
 	var err error
 	var resultset *pb.Record
 	if mode == "delete" {
@@ -55,7 +56,7 @@ func printPatient(client pb.FhirbufferClient, mode string) {
 	log.Println(resultset)
 }
 
-func updatePatient(client pb.FhirbufferClient, mode string) {
+func updateResource(client pb.FhirbufferClient, mode string) {
 	if len(*changeFile) == 0 {
 		return
 	}
