@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 	"strings"
@@ -79,7 +80,7 @@ func (s *fhirbuffer) List(req *pb.Search, stream pb.Fhirbuffer_ListServer) error
 	}
 	defer conn.Close()
 
-	rows, err := conn.Query("SELECT Resource FROM " + res)
+	rows, err := conn.Query("SELECT Id, Resource FROM " + res)
 	if err != nil {
 		return status.Error(codes.Unknown, err.Error())
 	}
@@ -87,10 +88,24 @@ func (s *fhirbuffer) List(req *pb.Search, stream pb.Fhirbuffer_ListServer) error
 
 	for rows.Next() {
 		var fetched string
-		err := rows.Scan(&fetched)
+		var id string
+		err := rows.Scan(&id, &fetched)
 		switch err {
 		case nil:
-			rec := &pb.Record{Resource: []byte(fetched)}
+			// DEBUG DEBUG coalesce ID (need to discuss txID versus MRN)
+			var f interface{}
+			err1 := json.Unmarshal([]byte(fetched), &f)
+			if err1 != nil {
+				return status.Error(codes.Unknown, err1.Error())
+			}
+			m := f.(map[string]interface{})
+			m["id"] = id
+			amber, err2 := json.Marshal(m)
+			if err2 != nil {
+				return status.Error(codes.Unknown, err2.Error())
+			}
+			// DEBUG DEBUG
+			rec := &pb.Record{Resource: amber}
 			if err := stream.Send(rec); err != nil {
 				return status.Error(codes.Unknown, err.Error())
 			}

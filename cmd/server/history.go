@@ -17,8 +17,8 @@ import (
 
 // The key/val pair for the tmp slice
 type kvpair struct {
-	k string
-	v int
+	k  string
+	v  int
 	ts time.Time
 }
 
@@ -203,7 +203,7 @@ func (s *fhirbuffer) loadHistory(ctx context.Context) error {
 	for key, _ := range resourceHistory {
 		var histab = fmt.Sprintf("public.%s_history", key)
 
-		qr := conn.QueryRow("SELECT COUNT(id), coalesce(MAX(ts), '0001-01-01') FROM " + histab )
+		qr := conn.QueryRow("SELECT COUNT(id), coalesce(MAX(ts), '0001-01-01') FROM " + histab)
 
 		var total int
 		var last time.Time
